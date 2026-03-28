@@ -21,15 +21,32 @@ class set_pivot_median(bpy.types.Operator):
         context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
         return {'FINISHED'}
 
+class set_pivot_individual(bpy.types.Operator):
+    """Set Pivot to Individual Origin"""
+    bl_idname = "view3d.pivot_individual"
+    bl_label = "Set Pivot to Individual Origin"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
+        return {'FINISHED'}
+
+
 # Keymap storage
 
 addon_keymaps = []
 
 # Registering
 
-def register():
-    bpy.utils.register_class(set_pivot_median)
+classes = (
+    set_pivot_median,
+    set_pivot_individual
+)
 
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+    
     # Accessing Window Manager to setup keybinds through Keyboard Configuration
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
@@ -37,15 +54,23 @@ def register():
     if kc:
         # New keymap group for the 3D View
         km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-        # Key map input
-        kmi = km.keymap_items.new(set_pivot_median.bl_idname, 'UP_ARROW', 'PRESS', ctrl=True, shift=True)
 
-        addon_keymaps.append((km, kmi))
+        # KEYMAP 1: Median (Ctrl + Shift + Up)
+        kmi_up = km.keymap_items.new(set_pivot_median.bl_idname, 'UP_ARROW', 'PRESS', ctrl=True, shift=True)
+        addon_keymaps.append((km, kmi_up))
+
+        # KEYMAP 2: Individual (Ctrl + Shift + Left)
+        kmi_left = km.keymap_items.new(set_pivot_individual.bl_idname, 'LEFT_ARROW', 'PRESS', shift=True, ctrl=True)
+        addon_keymaps.append((km, kmi_left))
 
 def unregister():
-    bpy.utils.unregister_class(set_pivot_median)
+    for km, kmi in addon_keymaps:
+        km.keymap_items.remove(kmi)
     addon_keymaps.clear()
 
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+        
 if __name__ == "__main__":
     register()
 
