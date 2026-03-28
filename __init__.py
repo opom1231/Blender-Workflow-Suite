@@ -30,7 +30,15 @@ class set_pivot_individual(bpy.types.Operator):
     def execute(self, context):
         context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
         return {'FINISHED'}
+class set_pivot_cursor(bpy.types.Operator):
+    """Set Pivot to 3D Cursor"""
+    bl_idname = "view3d.pivot_cursor"
+    bl_label = "Set Pivot to 3D Cursor"
+    bl_options = {'REGISTER', 'UNDO'}
 
+    def execute(self, context):
+        context.scene.tool_settings.transform_pivot_point = 'CURSOR'
+        return {'FINISHED'}
 
 # Keymap storage
 
@@ -40,7 +48,8 @@ addon_keymaps = []
 
 classes = (
     set_pivot_median,
-    set_pivot_individual
+    set_pivot_individual,
+    set_pivot_cursor
 )
 
 def register():
@@ -62,6 +71,10 @@ def register():
         # KEYMAP 2: Individual (Ctrl + Shift + Left)
         kmi_left = km.keymap_items.new(set_pivot_individual.bl_idname, 'LEFT_ARROW', 'PRESS', shift=True, ctrl=True)
         addon_keymaps.append((km, kmi_left))
+
+        # KEYMAP 3: Cursor (Ctrl + Shift + Right)
+        kmi_right = km.keymap_items.new(set_pivot_cursor.bl_idname, 'RIGHT_ARROW', 'PRESS', shift=True, ctrl=True)
+        addon_keymaps.append((km, kmi_right))
 
 def unregister():
     for km, kmi in addon_keymaps:
